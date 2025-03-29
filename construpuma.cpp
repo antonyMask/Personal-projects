@@ -1,14 +1,12 @@
-#include<iostream>
-#include<vector>
-#include<cmath>
-#include<iomanip>
-#include<limits>
-#include<cctype>
-#include<stdlib.h>
+#include <iostream>
+#include <vector>
+#include <iomanip>
+#include <limits>
+#include <cctype>
+#include <stdlib.h>
 using namespace std;
 
-
-// Variables globales para almacenar clientes (usando vectores separados)
+// Variables globales para clientes
 vector<string> codigosClientes;
 vector<string> nombresClientes;
 vector<int> edadesClientes;
@@ -16,19 +14,28 @@ vector<char> generosClientes;
 vector<int> tiposClientes;  // 1: Mayorista, 2: Empresa, 3: Detalle
 vector<int> diasRegistro;
 
-// FUNCIONES PARA VALIDACIONES
+// Variables globales para inventario
+vector<string> productos = {"Martillo", "Destornillador", "Pala", "Cinta Metrica"};
+vector<double> precios = {50.00, 40.00, 100.00, 30.00};
+vector<int> stock = {150, 200, 80, 120};
+
+// Variables para el carrito de compras
+vector<string> itemsComprados;
+vector<int> cantidadesCompradas;
+vector<double> preciosItems;
+double subtotal = 0;
+
+// Funciones de utilidad
 void limpiarPantalla() {
-    system("cls"); // Comando para sistemas Windows
+    system("cls");
 }
 
-// Pausa el programa hasta que el usuario presione Enter
 void esperarEnter() {
     cout << "\nPresione Enter para continuar...";
     cin.ignore(numeric_limits<streamsize>::max(), '\n');
     cin.get();
 }
 
-// Valida respuestas Sí/No (1 o 2)
 int validarSiNo() {
     int opcion;
     while (true) {
@@ -46,7 +53,6 @@ int validarSiNo() {
     }
 }
 
-// Valida que el nombre solo contenga letras y espacios
 string validarNombre(string mensaje) {
     string nombre;
     bool valido;
@@ -72,11 +78,10 @@ string validarNombre(string mensaje) {
     return nombre;
 }
 
-// Valida que la edad esté entre 1 y 100
 int validarEdad() {
     int numero;
     while (true) {
-        cout << "Edad: (Ingresar unicamente valores entre 1 a 100): ";
+        cout << "Edad: (1 a 100): ";
         cin >> numero;
         
         if (cin.fail()) {
@@ -93,7 +98,6 @@ int validarEdad() {
     return numero;
 }
 
-// Valida el género (M/F)
 char validarGenero() {
     char genero;
     while (true) {
@@ -113,18 +117,17 @@ char validarGenero() {
             return genero;
         }
 
-        cout << "Entrada invalida. Ingrese solo 'M' para masculino o 'F' para femenino\n";
+        cout << "Entrada invalida. Ingrese solo 'M' o 'F'\n";
     }
 }
 
-// Valida el tipo de cliente (1. Mayorista / 2. Empresa / 3. Detalle)
-int validarPedido() {
+int validarTipoCliente() {
     int opcion;
     while (true) {
-        cout << "Tipo de cliente (1. MAYORISTA / 2. EMPRRESA / 3. DETALLE): ";
+        cout << "Tipo cliente (1: Mayorista / 2: Empresa / 3: Detalle): ";
         cin >> opcion;
         
-        if (cin.fail() || (opcion != 1 && opcion != 2 && opcion !=3)) {
+        if (cin.fail() || opcion < 1 || opcion > 3) {
             cout << "Opcion invalida. Ingrese 1, 2 o 3\n";
             cin.clear();
             cin.ignore(numeric_limits<streamsize>::max(), '\n');
@@ -135,11 +138,10 @@ int validarPedido() {
     }
 }
 
-// Valida el dia que el cliente hizo la compra
 int validarDiaSemana() {
     int dia;
     do {
-        limpiarPantalla();  // Usa tu función existente
+        limpiarPantalla();
         cout << "*********************************\n";
         cout << "*   SELECCIONE EL DÍA DE COMPRA  *\n";
         cout << "*********************************\n";
@@ -159,20 +161,19 @@ int validarDiaSemana() {
             cout << "Error! Debe ingresar un numero del 1 al 7.\n";
             cin.clear();
             cin.ignore(numeric_limits<streamsize>::max(), '\n');
-            esperarEnter();  // Usa tu función existente
+            esperarEnter();
         } else {
             return dia;
         }
     } while(true);
 }
 
-// Función para generar un código automático
+// Funciones para clientes
 string generarCodigo() {
     static int contador = 1;
     return "CLI-" + to_string(contador++);
 }
 
-// Función para ingresar un nuevo cliente
 void ingresarCliente() {
     char otro;
     
@@ -182,17 +183,15 @@ void ingresarCliente() {
         cout << "*      REGISTRO DE CLIENTE      *\n";
         cout << "*********************************\n";
         
-        // Generar y mostrar código
         string codigo = generarCodigo();
         cout << "Codigo del cliente: " << codigo << endl;
         codigosClientes.push_back(codigo);
         
-        // Validar y almacenar datos
         cin.ignore();
         nombresClientes.push_back(validarNombre("Nombre completo: "));
         edadesClientes.push_back(validarEdad());
         generosClientes.push_back(validarGenero());
-        tiposClientes.push_back(validarPedido());
+        tiposClientes.push_back(validarTipoCliente());
         diasRegistro.push_back(validarDiaSemana());
         
         cout << "\nCliente registrado exitosamente!\n";
@@ -201,7 +200,6 @@ void ingresarCliente() {
     } while(otro == 1);
 }
 
-// Función para buscar un cliente por código
 void buscarCliente() {
     limpiarPantalla();
     cout << "*********************************\n";
@@ -255,7 +253,6 @@ void buscarCliente() {
     esperarEnter();
 }
 
-// Función para mostrar todos los clientes
 void mostrarClientes() {
     limpiarPantalla();
     cout << "*********************************\n";
@@ -281,7 +278,6 @@ void mostrarClientes() {
     esperarEnter();
 }
 
-// Menú de clientes
 void menuClientes() {
     int opcion;
     do {
@@ -315,9 +311,8 @@ void menuClientes() {
     } while(opcion != 4);
 }
 
-// Menú principal
-void menuPrincipal() {
-    int opcion;
+int main() {
+    int opcionPrincipal;
     do {
         limpiarPantalla();
         cout << "*******************************************\n";
@@ -332,9 +327,9 @@ void menuPrincipal() {
         cout << "*******************************************\n";
         cout << "Opcion: ";
         
-        cin >> opcion;
+        cin >> opcionPrincipal;
         
-        if(cin.fail() || opcion < 0 || opcion > 4) {
+        if(cin.fail() || opcionPrincipal < 0 || opcionPrincipal > 4) {
             cout << "Opcion invalida. Intente nuevamente.\n";
             cin.clear();
             cin.ignore(numeric_limits<streamsize>::max(), '\n');
@@ -342,7 +337,7 @@ void menuPrincipal() {
             continue;
         }
         
-        switch(opcion) {
+        switch(opcionPrincipal) {
             case 1: menuClientes(); break;
             case 2: 
                 if(codigosClientes.empty()) {
@@ -353,10 +348,139 @@ void menuPrincipal() {
                     esperarEnter();
                 }
                 break;
-            case 3: 
-                cout << "Inventario (en desarrollo)\n";
-                esperarEnter();
+            case 3: {
+                int opcionInventario;
+                do {
+                    limpiarPantalla();
+                    
+                    // Mostrar tabla de compras actual
+                    if(!itemsComprados.empty()) {
+                        cout << "\n*********************************************\n";
+                        cout << "*               COMPRAS ACTUALES          *\n";
+                        cout << "*********************************************\n";
+                        cout << "*   Producto            | Cant | Subtotal  *\n";
+                        cout << "*********************************************\n";
+                        
+                        for(size_t i = 0; i < itemsComprados.size(); i++) {
+                            cout << "* " << left << setw(20) << itemsComprados[i] 
+                                << "| " << right << setw(4) << cantidadesCompradas[i]
+                                << " | L." << right << setw(7) << fixed << setprecision(2) 
+                                 << preciosItems[i] << " *\n";
+                        }
+                        
+                        cout << "*********************************************\n";
+                        cout << "* SUBTOTAL:           |     | L." << right << setw(7) 
+                             << subtotal << " *\n";
+                        cout << "*********************************************\n\n";
+                    }
+                    
+                    // Mostrar inventario
+                    cout << "*********************************************\n";
+                    cout << "*           INVENTARIO DISPONIBLE          *\n";
+                    cout << "*********************************************\n";
+                    cout << "*  # | Producto         | Precio  | Stock  *\n";
+                    cout << "*********************************************\n";
+                    
+                    for(size_t i = 0; i < productos.size(); i++) {
+                        cout << "* " << right << setw(2) << i+1 << " | " << left << setw(16) << productos[i]
+                            << "| L." << right << setw(6) << fixed << setprecision(2) << precios[i]
+                             << " | " << right << setw(6) << stock[i] << " *\n";
+                    }
+                    
+                    cout << "*********************************************\n";
+                    
+                    if(codigosClientes.empty()) {
+                        cout << "*   REGISTRE CLIENTES PARA HACER COMPRAS  *\n";
+                        cout << "*********************************************\n";
+                        cout << "* 0. Regresar                            *\n";
+                        cout << "*********************************************\n";
+                        cout << "Opcion: ";
+                        
+                        cin >> opcionInventario;
+                        
+                        if(opcionInventario != 0) {
+                            cout << "Opción inválida! Debe registrar clientes primero.\n";
+                            esperarEnter();
+                        }
+                    } else {
+                        cout << "* 1. Comprar producto                    *\n";
+                        cout << "* 2. Vaciar carrito (restaurar stock)    *\n";
+                        cout << "* 0. Regresar                            *\n";
+                        cout << "*********************************************\n";
+                        cout << "Opcion: ";
+                        
+                        cin >> opcionInventario;
+                        
+                        if(opcionInventario == 1) {
+                            // CÓDIGO CORREGIDO PARA COMPRAR
+                            cout << "Seleccione producto (1-" << productos.size() << "): ";
+                            int productoElegido;
+                            cin >> productoElegido;
+                            
+                            if(cin.fail() || productoElegido < 1 || productoElegido > (int)productos.size()) {
+                                cout << "¡Producto inválido! Debe ser entre 1 y " << productos.size() << endl;
+                                cin.clear();
+                                cin.ignore(numeric_limits<streamsize>::max(), '\n');
+                                esperarEnter();
+                            } else {
+                                int indice = productoElegido - 1;
+                                cout << "Producto seleccionado: " << productos[indice] << endl;
+                                cout << "Precio unitario: L." << precios[indice] << endl;
+                                cout << "Stock disponible: " << stock[indice] << endl;
+                                cout << "Ingrese cantidad a comprar: ";
+                                
+                                int cantidad;
+                                cin >> cantidad;
+                                
+                                if(cin.fail() || cantidad <= 0) {
+                                    cout << "¡Cantidad inválida! Debe ser un número positivo.\n";
+                                    cin.clear();
+                                    cin.ignore(numeric_limits<streamsize>::max(), '\n');
+                                } else if(cantidad > stock[indice]) {
+                                    cout << "¡No hay suficiente stock! Solo hay " << stock[indice] << " unidades.\n";
+                                } else {
+                                    // Procesar compra correctamente
+                                    stock[indice] -= cantidad;
+                                    itemsComprados.push_back(productos[indice]);
+                                    cantidadesCompradas.push_back(cantidad);
+                                    double subtotalItem = precios[indice] * cantidad;
+                                    preciosItems.push_back(subtotalItem);
+                                    subtotal += subtotalItem;
+                                    
+                                    cout << "\n¡Compra realizada con éxito!\n";
+                                    cout << "Se agregaron " << cantidad << " " << productos[indice] 
+                                        << " al carrito (L." << subtotalItem << ")\n";
+                                }
+                                esperarEnter();
+                            }
+                        } 
+                        else if(opcionInventario == 2) {
+                            // Vaciar carrito y restaurar stock
+                            for(size_t i = 0; i < itemsComprados.size(); i++) {
+                                for(size_t j = 0; j < productos.size(); j++) {
+                                    if(itemsComprados[i] == productos[j]) {
+                                        stock[j] += cantidadesCompradas[i];
+                                        break;
+                                    }
+                                }
+                            }
+                            
+                            itemsComprados.clear();
+                            cantidadesCompradas.clear();
+                            preciosItems.clear();
+                            subtotal = 0;
+                            
+                            cout << "Carrito vaciado y stock restaurado exitosamente.\n";
+                            esperarEnter();
+                        }
+                        else if(opcionInventario != 0) {
+                            cout << "¡Opción inválida! Seleccione 0, 1 o 2.\n";
+                            esperarEnter();
+                        }
+                    }
+                } while(opcionInventario != 0);
                 break;
+            }
             case 4: 
                 if(codigosClientes.empty()) {
                     cout << "Debe registrar clientes primero.\n";
@@ -368,10 +492,7 @@ void menuPrincipal() {
                 break;
             case 0: cout << "Saliendo del sistema...\n"; break;
         }
-    } while(opcion != 0);
-}
-
-int main() {
-    menuPrincipal();
+    } while(opcionPrincipal != 0);
+    
     return 0;
 }
